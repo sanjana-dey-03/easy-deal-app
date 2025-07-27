@@ -1,160 +1,108 @@
-// src/components/SupplierRegister/PersonalDetails.js
-import React, { useState, useRef } from 'react';
-import { TextField, Button, Box, Typography, Stack } from '@mui/material';
-import { auth } from '../../firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import { useState } from 'react';
+import { TextField, Button, Stack } from '@mui/material';
+import PropTypes from 'prop-types';
 
-const PersonalDetails = ({ onNext }) => {
+export default function PersonalDetails({ onNext, initialData = {} }) {
   const [form, setForm] = useState({
-    fullName: '',
-    phone: '',
-    email: '',
-    password: '',
-    businessName: '',
-    businessLocation: '',
-    fssaiLink: ''
+      fullName: initialData.fullName || '',
+      phone: initialData.phone || '',
+      email: initialData.email || '',
+      password: initialData.password || '',
+      businessName: initialData.businessName || '',
+      businessLocation: initialData.businessLocation || '',
+      fssaiLink: initialData.fssaiLink || ''
   });
+    const [loading, setLoading] = useState(false);
 
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState(null);
-  const recaptchaRef = useRef(null);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+    const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleNext = () => {
-    const values = Object.values(form);
-    if (values.some((v) => !v.trim())) {
-      alert('Please fill all fields.');
-      return;
-    }
-    if (!otpSent || !otp) {
-      alert('Please verify your phone number using OTP.');
-      return;
-    }
+      const {
+          fullName,
+          phone,
+          email,
+          password,
+          businessName,
+          businessLocation,
+          fssaiLink
+      } = form;
 
-    // Verify OTP before proceeding
-    confirmationResult.confirm(otp)
-      .then(() => {
-        onNext(form); // send data to parent
-      })
-      .catch((error) => {
-        alert('Invalid OTP. Please try again.');
-        console.error(error);
-      });
-  };
-
-  const sendOTP = () => {
-    if (!form.phone.trim()) {
-      alert('Please enter your phone number.');
-      return;
+      if (![
+          fullName,
+          phone,
+          email,
+          password,
+          businessName,
+          businessLocation,
+          fssaiLink
+      ].every(v => v.trim())) {
+          return alert('Please fill all required fields');
     }
 
-    if (!window.recaptchaVerifier || !window.recaptchaVerifier.rendered) {
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        'recaptcha-container',
-        { size: 'invisible' },
-        auth
-      );
-      window.recaptchaVerifier.render();
-    }
-
-    signInWithPhoneNumber(auth, '+91' + form.phone, window.recaptchaVerifier)
-      .then((result) => {
-        setConfirmationResult(result);
-        setOtpSent(true);
-        alert('OTP sent to your phone!');
-      })
-      .catch((error) => {
-        alert('Error sending OTP: ' + error.message);
-      });
+      setLoading(true);
+      onNext(form);
+      setLoading(false);
   };
 
   return (
-    <Box>
-      <Typography variant="h5" gutterBottom>
-        Supplier Registration – Step 1: Personal Details
-      </Typography>
-
-      <Stack spacing={2} mt={2}>
-        <TextField
-          label="Full Name*"
-          name="fullName"
-          value={form.fullName}
-          onChange={handleChange}
-          fullWidth
-        />
-
-        <Stack direction="row" spacing={1}>
+      <Stack spacing={2}>
           <TextField
-            label="Phone Number*"
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            fullWidth
+              label="Full Name*"
+              name="fullName"
+              value={form.fullName}
+              onChange={handleChange}
+              fullWidth
           />
-          <Button onClick={sendOTP} variant="contained" color="primary" sx={{ whiteSpace: 'nowrap' }}>
-            Send OTP
+          <TextField
+              label="Phone*"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              fullWidth
+          />
+          <TextField
+              label="Email*"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              fullWidth
+          />
+          <TextField
+              label="Password*"
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              fullWidth
+          />
+          <TextField
+              label="Business Name*"
+              name="businessName"
+              value={form.businessName}
+              onChange={handleChange}
+              fullWidth
+          />
+          <TextField
+              label="Business Location*"
+              name="businessLocation"
+              value={form.businessLocation}
+              onChange={handleChange}
+              fullWidth
+          />
+          <TextField
+              label="FSSAI License Link*"
+              name="fssaiLink"
+              value={form.fssaiLink}
+              onChange={handleChange}
+              fullWidth
+          />
+          <Button variant="contained" onClick={handleNext} disabled={loading}>
+              {loading ? 'Processing...' : 'Next'}
           </Button>
-        </Stack>
-
-        {otpSent && (
-          <TextField
-            label="Enter OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            fullWidth
-          />
-        )}
-
-        <TextField
-          label="Email*"
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          label="Password*"
-          type="password"
-          name="password"
-          value={form.password}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          label="Business Name*"
-          name="businessName"
-          value={form.businessName}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          label="Business Location*"
-          name="businessLocation"
-          value={form.businessLocation}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          label="FSSAI License Link (Google Drive)*"
-          name="fssaiLink"
-          value={form.fssaiLink}
-          onChange={handleChange}
-          fullWidth
-        />
-
-        <Button variant="contained" onClick={handleNext}>
-          Next: Bank Details
-        </Button>
       </Stack>
-
-      {/* Recaptcha placeholder */}
-      <div id="recaptcha-container" ref={recaptchaRef}></div>
-    </Box>
   );
+}
+PersonalDetails.propTypes = {
+    onNext: PropTypes.func.isRequired,
+    initialData: PropTypes.object
 };
-
-export default PersonalDetails;
