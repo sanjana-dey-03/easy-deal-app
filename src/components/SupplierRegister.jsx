@@ -1,45 +1,56 @@
-// src/components/SupplierRegister.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { Container, Box, Stepper, Step, StepLabel } from '@mui/material';
 import PersonalDetails from './SupplierRegister/PersonalDetails';
 import BankDetails from './SupplierRegister/BankDetails';
-import { db } from '../firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
 
-const SupplierRegister = ({ onSwitchToLogin }) => {
-  const [step, setStep] = useState(1);
-  const [personalData, setPersonalData] = useState(null);
+const steps = ['Personal Details', 'Bank Details'];
 
-  const handleNext = (data) => {
-    setPersonalData(data);
-    setStep(2);
-  };
+export default function SupplierRegister({ onSwitchToLogin }) {
+    const [activeStep, setActiveStep] = useState(0);
+    const [collectedData, setCollectedData] = useState({});
+    const { registerSupplier } = useAuth();
 
-  const handleSubmit = async (bankData) => {
-    const fullData = {
-      ...personalData,
-      ...bankData,
-      registeredAt: new Date().toISOString()
+    const handleNext = (data) => {
+        setCollectedData(prev => ({ ...prev, ...data }));
+        setActiveStep(prev => prev + 1);
     };
 
-    try {
-      await setDoc(doc(db, 'suppliers', personalData.uid), fullData);
-      alert('Registration complete!');
-      onSwitchToLogin();
-    } catch (err) {
-      console.error('Error saving to Firestore:', err);
-      alert('Something went wrong. Try again.');
-    }
-  };
+    const handleBack = () => setActiveStep(prev => prev - 1);
 
-  return (
-    <div>
-      {step === 1 ? (
-        <PersonalDetails onNext={handleNext} />
-      ) : (
-        <BankDetails onBack={() => setStep(1)} onSubmit={handleSubmit} />
-      )}
-    </div>
-  );
-};
+    const handleFinish = async (bankData) => {
+        const profileData = {
+            ...collectedData,
+            ...bankData,
+        };
+        try {
+            console.log("Profile Data : ", profileData);
+            await registerSupplier(profileData);
+            alert('Supplier registration successful!');
+            if (onSwitchToLogin) onSwitchToLogin();
+        } catch (err) {
+            console.error('Registration failed:', err);
+            alert('Registration failed: ' + err.message);
+        }
+    };
 
-export default SupplierRegister;
+    return (
+        <Container maxWidth="sm">
+            <Box mt={4}>
+                <Stepper activeStep={activeStep} alternativeLabel>
+                    {steps.map(label => (
+                        <Step key={label}><StepLabel>{label}</StepLabel></Step>
+                    ))}
+                </Stepper>
+            </Box>
+            <Box mt={4}>
+                {activeStep === 0 && (
+                    <PersonalDetails onNext={handleNext} initialData={collectedData} />
+                )}
+                {activeStep === 1 && (
+                    <BankDetails onBack={handleBack} onSubmit={handleFinish} initialData={collectedData} />
+                )}
+            </Box>
+        </Container>
+    );
+}
