@@ -1,35 +1,34 @@
+// src/components/SupplierRegister.jsx
 import React, { useState } from 'react';
 import PersonalDetails from './SupplierRegister/PersonalDetails';
 import BankDetails from './SupplierRegister/BankDetails';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase'; // make sure this path is correct
+import { db } from '../firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
 const SupplierRegister = ({ onSwitchToLogin }) => {
   const [step, setStep] = useState(1);
   const [personalData, setPersonalData] = useState(null);
 
-  const handleNext = async (data) => {
-    try {
-      // Firebase registration with email + password
-      await createUserWithEmailAndPassword(auth, data.email, data.password);
-
-      setPersonalData(data);
-      setStep(2);
-    } catch (error) {
-      alert(`Registration error: ${error.message}`);
-    }
+  const handleNext = (data) => {
+    setPersonalData(data);
+    setStep(2);
   };
 
-  const handleSubmit = (bankData) => {
+  const handleSubmit = async (bankData) => {
     const fullData = {
       ...personalData,
       ...bankData,
       registeredAt: new Date().toISOString()
     };
 
-    console.log('Final submitted supplier registration data:', fullData);
-    alert('Registration complete!');
-    onSwitchToLogin(); // optional: return to login
+    try {
+      await setDoc(doc(db, 'suppliers', personalData.uid), fullData);
+      alert('Registration complete!');
+      onSwitchToLogin();
+    } catch (err) {
+      console.error('Error saving to Firestore:', err);
+      alert('Something went wrong. Try again.');
+    }
   };
 
   return (
@@ -44,4 +43,3 @@ const SupplierRegister = ({ onSwitchToLogin }) => {
 };
 
 export default SupplierRegister;
-
