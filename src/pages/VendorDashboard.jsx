@@ -1,21 +1,28 @@
 import React from 'react';
-import { Box, Typography, Button, Stack } from '@mui/material';
-import VendorWalletInfo from '../components/VendorWalletInfo'; // adjust path as needed
+import { Box, Typography, Button, Stack, Container } from '@mui/material';
+import VendorWalletInfo from '../components/VendorWalletInfo'; // adjust path if needed
+import TopNavbar from '../components/TopNavbar'; // import TopNavbar
+import AvailableProducts from '../components/AvailableProducts';
 
 const VendorDashboard = () => {
   return (
-    <Box p={4}>
-      <Typography variant="h4" gutterBottom>Vendor Dashboard</Typography>
+    <Box>
+      <TopNavbar /> {/* Wallet Balance on top */}
+      <Container sx={{ mt: 4 }}>
+        <Typography variant="h4" gutterBottom>Vendor Dashboard</Typography>
 
-      <Stack spacing={2} mb={4}>
-        <Button variant="contained" color="primary">Start New Group Order</Button>
-        <Button variant="outlined">View My Orders</Button>
-        <Button variant="outlined">Invite Suppliers</Button>
-        <Button variant="outlined">Track Payments</Button>
-      </Stack>
+        <Stack spacing={2} mb={4}>
+          
+          <Button variant="outlined">View My Orders</Button>
+          
+          <Button variant="outlined">Track Payments</Button>
+        </Stack>
 
-      {/* Wallet Information Section */}
-      <VendorWalletInfo />
+        {/* Wallet Information Section */}
+        <VendorWalletInfo />
+       
+<AvailableProducts />
+      </Container>
     </Box>
   );
 };

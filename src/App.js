@@ -5,6 +5,7 @@ import VendorRegister from './components/VendorRegister';
 import VendorLogin from './components/VendorLogin';
 import VendorDashboard from './pages/VendorDashboard';
 import SupplierDashboard from './pages/SupplierDashboard';
+import ProductUploaderPage from './pages/ProductUploaderPage';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/vendor-login" element={<VendorLogin />} />
         <Route path="/vendor-dashboard" element={<VendorDashboard />} />
         <Route path="/supplier-dashboard" element={<SupplierDashboard />} />
+        <Route path="/upload-product" element={<ProductUploaderPage />} />
       </Routes>
     </Router>
   );
