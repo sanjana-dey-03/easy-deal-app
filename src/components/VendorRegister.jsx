@@ -1,39 +1,27 @@
-// src/components/VendorRegister.jsx
 import React, { useState } from 'react';
-import { TextField, Button, Stack, Typography, Alert } from '@mui/material';
+import { TextField, Button, Stack, Typography } from '@mui/material';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth } from '../firebase'; // Make sure the path is correct
+import { useNavigate } from 'react-router-dom';
 
 const VendorRegister = ({ onSwitchToLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const navigate = useNavigate();
 
   const handleRegister = async () => {
-    setErrorMsg('');
-    setSuccessMsg('');
-
-    if (!email || !password) {
-      setErrorMsg('Please enter both email and password.');
-      return;
-    }
-
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      setSuccessMsg('Vendor registered successfully!');
+      alert('Registration successful!');
+      navigate('/vendor-login'); // Navigate to login page after registration
     } catch (error) {
-      setErrorMsg(error.message);
+      console.error('Registration error:', error);
+      alert('Registration failed: ' + error.message);
     }
   };
 
   return (
     <Stack spacing={2} mt={1}>
-      <Typography variant="h6">Register as Vendor</Typography>
-
-      {errorMsg && <Alert severity="error">{errorMsg}</Alert>}
-      {successMsg && <Alert severity="success">{successMsg}</Alert>}
-
       <TextField
         label="Email"
         fullWidth
@@ -48,7 +36,7 @@ const VendorRegister = ({ onSwitchToLogin }) => {
         onChange={(e) => setPassword(e.target.value)}
       />
       <Button variant="contained" onClick={handleRegister}>
-        Register
+        Register as Vendor
       </Button>
       <Typography variant="body2" textAlign="center">
         Already have an account?{' '}
@@ -59,4 +47,3 @@ const VendorRegister = ({ onSwitchToLogin }) => {
 };
 
 export default VendorRegister;
-
